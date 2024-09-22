@@ -1,13 +1,28 @@
+import 'dart:convert';
+
 import 'package:codefactory/common/component/custom_text_form_field.dart';
 import 'package:codefactory/common/const/colors.dart';
+import 'package:codefactory/common/const/data.dart';
 import 'package:codefactory/common/layout/default_layout.dart';
+import 'package:codefactory/common/view/root_tab.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  String username = '';
+  String password = '';
+
+  @override
   Widget build(BuildContext context) {
+    final dio = Dio();
+
     return DefaultLayout(
       child: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -33,21 +48,46 @@ class LoginScreen extends StatelessWidget {
                 ),
                 CustomTextFormField(
                   hintText: '이메일을 입력해주세요.',
-                  onChanged: (String value) {},
+                  onChanged: (String value) {
+                    username = value;
+                  },
                 ),
                 const SizedBox(
                   height: 16.0,
                 ),
                 CustomTextFormField(
                   hintText: '비밀번호를 입력해주세요.',
-                  onChanged: (String value) {},
+                  onChanged: (String value) {
+                    password = value;
+                  },
                   obscureText: true,
                 ),
                 const SizedBox(
                   height: 16.0,
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final rawString = '$username:$password';
+
+                    Codec<String, String> stringToBase64 = utf8.fuse(base64);
+
+                    String token = stringToBase64.encode(rawString);
+
+                    final res = await dio.post('http://$ip/auth/login',
+                        options: Options(
+                            headers: {'Authorization': 'Basic $token'}));
+
+                    final accessToken = res.data['accessToken'];
+                    final refreshToken = res.data['refreshToken'];
+
+                    await storage.write(
+                        key: ACCESS_TOKEN_KEY, value: accessToken);
+                    await storage.write(
+                        key: REFRESH_TOKEN_KEY, value: refreshToken);
+
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const RootTab()));
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: PRIMARY_COLOR,
                     shape: RoundedRectangleBorder(
