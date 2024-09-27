@@ -13,43 +13,55 @@ class RestaurantCard extends StatelessWidget {
   final double ratings;
   final bool isDetail;
   final String? detail;
+  final String? heroKey;
 
-  const RestaurantCard(
-      {super.key,
-      required this.image,
-      required this.name,
-      required this.tags,
-      required this.ratingsCount,
-      required this.deliveryTime,
-      required this.deliveryFee,
-      required this.ratings,
-      this.isDetail = false,
-      this.detail});
+  const RestaurantCard({
+    super.key,
+    required this.image,
+    required this.name,
+    required this.tags,
+    required this.ratingsCount,
+    required this.deliveryTime,
+    required this.deliveryFee,
+    required this.ratings,
+    this.isDetail = false,
+    this.detail,
+    this.heroKey,
+  });
 
   factory RestaurantCard.fromModel(
           {required RestaurantModel model, bool isDetail = false}) =>
       RestaurantCard(
-          image: Image.network(
-            model.thumbUrl,
-            fit: BoxFit.cover,
-          ),
-          name: model.name,
-          tags: model.tags,
-          ratingsCount: model.ratingsCount,
-          deliveryTime: model.deliveryTime,
-          deliveryFee: model.deliveryFee,
-          ratings: model.ratings,
-          isDetail: isDetail,
-          detail: model is RestaurantDetailModel ? model.detail : null);
+        image: Image.network(
+          model.thumbUrl,
+          fit: BoxFit.cover,
+        ),
+        name: model.name,
+        tags: model.tags,
+        ratingsCount: model.ratingsCount,
+        deliveryTime: model.deliveryTime,
+        deliveryFee: model.deliveryFee,
+        ratings: model.ratings,
+        isDetail: isDetail,
+        detail: model is RestaurantDetailModel ? model.detail : null,
+        heroKey: model.id,
+      );
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        if (isDetail) image,
-        if (!isDetail)
+        if (heroKey != null)
+          Hero(
+            tag: ObjectKey(heroKey),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(isDetail ? 0 : 12.0),
+              child: image,
+            ),
+          ),
+        if (heroKey == null)
           ClipRRect(
-            borderRadius: BorderRadius.circular(12.0),
+            borderRadius: BorderRadius.circular(isDetail ? 0 : 12.0),
             child: image,
           ),
         const SizedBox(
