@@ -7,6 +7,7 @@ import 'package:codefactory/restaurant/model/restaurant_model.dart';
 import 'package:codefactory/restaurant/provider/restaurant_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class RestaurantDetailScreen extends ConsumerStatefulWidget {
   final String id;
@@ -49,16 +50,34 @@ class _RestaurantDetailScreenState
         child: CustomScrollView(
           slivers: [
             renderTop(model: state),
+            if (state is! RestaurantDetailModel) renderLoading(),
             if (state is RestaurantDetailModel) renderLabel(),
             if (state is RestaurantDetailModel)
-              renderProducts(products: state.products)
+              renderProducts(products: state.products),
           ],
         ));
   }
 
+  SliverPadding renderLoading() {
+    return SliverPadding(
+        padding: const EdgeInsets.all(16.0),
+        sliver: SliverList(
+            delegate: SliverChildListDelegate(List.generate(
+                10,
+                (index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: Skeletonizer(
+                      enabled: true,
+                      child: Container(
+                          width: double.infinity,
+                          height: 20.0,
+                          color: Colors.black),
+                    ))))));
+  }
+
   SliverPadding renderLabel() {
     return const SliverPadding(
-      padding: EdgeInsets.symmetric(horizontal: 16.0),
+      padding: EdgeInsets.all(16.0),
       sliver: SliverToBoxAdapter(
         child: Text(
           '메뉴',
