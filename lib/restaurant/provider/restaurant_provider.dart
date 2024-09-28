@@ -2,6 +2,7 @@ import 'package:codefactory/common/model/cursor_pagination_model.dart';
 import 'package:codefactory/common/provider/pagination_provider.dart';
 import 'package:codefactory/restaurant/model/restaurant_model.dart';
 import 'package:codefactory/restaurant/repository/restaurant_repository.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final restaurantDetailProvider =
@@ -10,7 +11,7 @@ final restaurantDetailProvider =
 
   if (state is! CursorPagination) return null;
 
-  return state.data.firstWhere((e) => e.id == id);
+  return state.data.firstWhereOrNull((e) => e.id == id);
 });
 
 final restaurantProvider =
@@ -39,9 +40,13 @@ class RestaurantStateNotifier
 
     final res = await repository.getRestaurantDetail(id: id);
 
-    state = pState.copyWith(
-        data: pState.data
-            .map<RestaurantModel>((e) => e.id == id ? res : e)
-            .toList());
+    if (pState.data.where((e) => e.id == id).isEmpty) {
+      state = pState.copyWith(data: <RestaurantModel>[...pState.data, res]);
+    } else {
+      state = pState.copyWith(
+          data: pState.data
+              .map<RestaurantModel>((e) => e.id == id ? res : e)
+              .toList());
+    }
   }
 }
