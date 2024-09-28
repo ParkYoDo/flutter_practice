@@ -1,5 +1,6 @@
 import 'package:codefactory/common/const/colors.dart';
 import 'package:codefactory/common/model/cursor_pagination_model.dart';
+import 'package:codefactory/common/utils/pagination_utils.dart';
 import 'package:codefactory/restaurant/component/restaurant_card.dart';
 import 'package:codefactory/restaurant/provider/restaurant_provider.dart';
 import 'package:codefactory/restaurant/view/restaurant_detail_screen.dart';
@@ -24,9 +25,9 @@ class _RestaurantScreenState extends ConsumerState<RestaurantScreen> {
   }
 
   void scrollListener() {
-    if (controller.offset > controller.position.maxScrollExtent - 300) {
-      ref.read(restaurantProvider.notifier).paginate(fetchMore: true);
-    }
+    PaginationUtils.paginate(
+        controller: controller,
+        provider: ref.read(restaurantProvider.notifier));
   }
 
   @override

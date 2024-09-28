@@ -1,10 +1,15 @@
 import 'package:codefactory/common/const/colors.dart';
 import 'package:codefactory/common/layout/default_layout.dart';
+import 'package:codefactory/common/model/cursor_pagination_model.dart';
+import 'package:codefactory/common/utils/pagination_utils.dart';
 import 'package:codefactory/product/component/product_card.dart';
+import 'package:codefactory/rating/component/rating_card.dart';
+import 'package:codefactory/rating/model/rating_model.dart';
 import 'package:codefactory/restaurant/component/restaurant_card.dart';
 import 'package:codefactory/restaurant/model/restaurant_detail_model.dart';
 import 'package:codefactory/restaurant/model/restaurant_model.dart';
 import 'package:codefactory/restaurant/provider/restaurant_provider.dart';
+import 'package:codefactory/restaurant/provider/restaurant_rating_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -23,11 +28,21 @@ class RestaurantDetailScreen extends ConsumerStatefulWidget {
 
 class _RestaurantDetailScreenState
     extends ConsumerState<RestaurantDetailScreen> {
+  final ScrollController controller = ScrollController();
+
   @override
   void initState() {
     super.initState();
 
     ref.read(restaurantProvider.notifier).getDetail(id: widget.id);
+    controller.addListener(scrollListener);
+  }
+
+  void scrollListener() {
+    PaginationUtils.paginate(
+      controller: controller,
+      provider: ref.read(restaurantRatingProvider(widget.id).notifier),
+    );
   }
 
   @override
@@ -35,6 +50,7 @@ class _RestaurantDetailScreenState
     BuildContext context,
   ) {
     final state = ref.watch(restaurantDetailProvider(widget.id));
+    final ratingsState = ref.watch(restaurantRatingProvider(widget.id));
 
     if (state == null) {
       return const DefaultLayout(
@@ -48,14 +64,40 @@ class _RestaurantDetailScreenState
     return DefaultLayout(
         title: widget.title,
         child: CustomScrollView(
+          controller: controller,
           slivers: [
             renderTop(model: state),
             if (state is! RestaurantDetailModel) renderLoading(),
             if (state is RestaurantDetailModel) renderLabel(),
             if (state is RestaurantDetailModel)
               renderProducts(products: state.products),
+            if (ratingsState is CursorPagination<RatingModel>)
+              renderRatings(models: ratingsState.data)
           ],
         ));
+  }
+
+  SliverPadding renderRatings({required List<RatingModel> models}) {
+    return SliverPadding(
+        padding: const EdgeInsets.all(16.0),
+        sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(childCount: models.length + 1,
+                (_, index) {
+          if (index == models.length) {
+            return const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Center(
+                  child: CircularProgressIndicator(
+                color: PRIMARY_COLOR,
+              )),
+            );
+          }
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: RatingCard.fromModel(model: models[index]),
+          );
+        })));
   }
 
   SliverPadding renderLoading() {
