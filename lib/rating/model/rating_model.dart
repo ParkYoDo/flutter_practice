@@ -1,6 +1,6 @@
 import 'package:codefactory/common/model/model_with_id.dart';
 import 'package:codefactory/common/utils/data_utils.dart';
-import 'package:codefactory/user/view/model/user_model.dart';
+import 'package:codefactory/user/model/user_model.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'rating_model.g.dart';
