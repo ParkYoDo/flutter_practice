@@ -48,6 +48,10 @@ class AuthProvider extends ChangeNotifier {
             ]),
       ];
 
+  void logout() {
+    ref.read(userMeProvider.notifier).logout();
+  }
+
   // splashScreen : 앱을 처음 시작했을 때 토큰이 존재하는지 확인 후 로그인 혹은 홈으로 보내줄지 확인하는 과정 필요
   String? redirectLogic(_, GoRouterState state) {
     final UserModelBase? user = ref.read(userMeProvider);
