@@ -1,9 +1,12 @@
 import 'package:codefactory/common/const/colors.dart';
 import 'package:codefactory/common/layout/default_layout.dart';
+import 'package:codefactory/order/provider/order_provider.dart';
+import 'package:codefactory/order/view/order_done_screen.dart';
 import 'package:codefactory/product/component/product_card.dart';
 import 'package:codefactory/user/provider/basket_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class BasketScreen extends ConsumerWidget {
   static String get routeName => 'basket';
@@ -100,7 +103,18 @@ class BasketScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                           ),
-                          onPressed: () {},
+                          onPressed: () async {
+                            final res = await ref
+                                .read(orderProvider.notifier)
+                                .postOrder();
+
+                            if (res) {
+                              context.goNamed(OrderDoneScreen.routeName);
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('결제 실패!')));
+                            }
+                          },
                           child: const Text(
                             '결제하기',
                             style: TextStyle(color: Colors.white),
